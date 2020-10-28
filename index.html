@@ -1,0 +1,104 @@
+<html>
+
+<body>
+	foo
+	<canvas id="canvas" width="800" height="800"></canvas>
+	<script>
+		const canvas = document.getElementById('canvas')
+		const gl =
+			canvas.getContext('webgl2')
+		function initGL() {
+			const verTex = `
+   attribute vec2 a_position;
+   attribute vec2 a_texCoord;
+   varying vec2 v_texCoord;
+   void main() {
+    gl_Position = vec4(a_position, 0, 1);
+    v_texCoord = a_texCoord;
+  }
+`
+
+			const fragTex = `
+  precision mediump float;
+  uniform sampler2D u_image;
+  varying vec2 v_texCoord;
+  void main() {
+    gl_FragColor = vec4(texture2D(u_image, v_texCoord).xyz, 1);
+  }
+`
+
+			function shader(str, typ) {
+				let shader = gl.createShader(typ)
+				gl.shaderSource(shader, str)
+				gl.compileShader(shader)
+				if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
+					return -1
+				}
+				return shader
+			}
+
+			function createShader(ver, frag) {
+				let verShader = shader(ver, gl.VERTEX_SHADER)
+				let fragShader = shader(frag, gl.FRAGMENT_SHADER)
+				let id = gl.createProgram()
+				gl.attachShader(id, verShader)
+				gl.attachShader(id, fragShader)
+				gl.linkProgram(id)
+
+				return id
+			}
+
+			let program = createShader(verTex, fragTex)
+			let positionLocation = gl.getAttribLocation(program, "a_position")
+			let texCoordLocation = gl.getAttribLocation(program, "a_texCoord")
+			gl.useProgram(program)
+
+			let buffer = gl.createBuffer()
+			gl.bindBuffer(gl.ARRAY_BUFFER, buffer)
+			gl.bufferData(
+				gl.ARRAY_BUFFER,
+				new Float32Array([-1.0, 1.0,
+					1.0, 1.0, -1.0, -1.0, -1.0, -1.0,
+					1.0, 1.0,
+					1.0, -1.0
+				]),
+				gl.STATIC_DRAW)
+			gl.enableVertexAttribArray(positionLocation)
+			gl.vertexAttribPointer(positionLocation, 2, gl.FLOAT, false, 0, 0)
+
+			let texCoordBuffer = gl.createBuffer()
+			gl.bindBuffer(gl.ARRAY_BUFFER, texCoordBuffer)
+			gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([
+				0.0, 0.0,
+				1.0, 0.0,
+				0.0, 1.0,
+				0.0, 1.0,
+				1.0, 0.0,
+				1.0, 1.0
+			]), gl.STATIC_DRAW)
+			gl.enableVertexAttribArray(texCoordLocation)
+			gl.vertexAttribPointer(texCoordLocation, 2, gl.FLOAT, false, 0, 0)
+
+			let texture = gl.createTexture();
+			gl.bindTexture(gl.TEXTURE_2D, texture)
+			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE)
+			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE)
+			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST)
+			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST)
+		}
+
+		const video_buffer = {
+			data: null,
+			ui8: null,
+			ui32: null,
+			width: 0,
+			height: 0,
+		}
+
+		initGL()
+
+	</script>
+	<script async type="text/javascript" src="index.js"></script>
+</body>
+
+</html>

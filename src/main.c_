@@ -1,0 +1,79 @@
+#include <netinet/in.h>
+#include <stdio.h>
+#include <stdlib.h>
+
+#include <strings.h>
+#include <sys/socket.h>
+#include <sys/types.h>
+#include <time.h>
+#include <unistd.h>
+
+#include "macro.h"
+#include "str.h"
+
+void error(const char* msg) {
+  perror(msg);
+  exit(1);
+}
+
+int main(int argc, char* argv[]) {
+  str* str1 = str_new("ala ma koteł\n\0");
+  str* str2 = str_multiply(str1, 10);
+  printf("x %s\n", str2->ptr);
+
+  write(STDOUT_FILENO, "ave\n", 4);
+  int sockfd, newsockfd, portno;
+  socklen_t clilen;
+  char* buffer = MAKE(char, 1024);
+  struct sockaddr_in cli_addr;
+  struct sockaddr_in serv_addr;
+  int n;
+
+  sockfd = socket(AF_INET, SOCK_STREAM, 0);
+  if (sockfd < 0)
+    error("ERROR opening socket");
+
+  portno = 8081;  // atoi(argv[1]);
+  serv_addr.sin_family = AF_INET;
+  serv_addr.sin_addr.s_addr = INADDR_ANY;
+  serv_addr.sin_port = htons(portno);
+  if (bind(sockfd, (struct sockaddr*)&serv_addr, sizeof(serv_addr)) < 0)
+    error("ERROR on binding");
+  /* code */
+
+  listen(sockfd, 5);
+
+  while (1) {
+    clilen = sizeof(cli_addr);
+    newsockfd = accept(sockfd, (struct sockaddr*)&cli_addr, &clilen);
+    if (newsockfd < 0)
+      error("ERROR on accept");
+    n = read(newsockfd, buffer, 1024);
+    if (n < 0)
+      error("ERROR reading from socket");
+    printf("Here is the message: %s\n", buffer);
+    n = write(newsockfd, "HTTP/1.1 200\r\n", 14);
+    n = write(newsockfd, "Content-Type: text/html\r\n", 25);
+    n = write(newsockfd, "\r\n", 2);
+    time_t rawtime;
+    struct tm* timeinfo;
+    time(&rawtime);
+    timeinfo = localtime(&rawtime);
+    int s =
+        sprintf(buffer, "Current local time and date: %s ", asctime(timeinfo));
+    n = write(newsockfd, buffer, s);
+    int j = 100;
+    for (int i = 0; i < 100000; i++) {
+      n = write(newsockfd, i == j ? "#\n" : "+", 2);
+      if (j == i) {
+        j += 100;
+      }
+    }
+    if (n < 0)
+      error("ERROR writing to socket");
+    close(newsockfd);
+  }
+  //
+  // close(sockfd);
+  return 0;
+}
