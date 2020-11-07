@@ -6,7 +6,7 @@ const ui16 palette0[] = {0, 0xF800, 0xFFFE, 0, 0, 0, 0, 0, 0, 0, 0,
 const ui16* palette[] = {palette0, palette0, palette0, palette0,
                          palette0, palette0, palette0, palette0};
 
-const ui8 sprite[] = {
+const ui8 spr[] = {
 #include "data.txt"
 };
 
@@ -19,6 +19,6 @@ const struct cell cell[] = {
 };
 
 struct data data = {.palette = palette,
-                    .sprite = sprite,
+                    .sprite = spr,
                     .sprite_width = sprite_width,
                     .cell = cell};

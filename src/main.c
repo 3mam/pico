@@ -20,30 +20,31 @@ typedef struct {
 #include "data.h"
 void test(void* arg) {
   foo* f = (foo*)arg;
-  draw.cls(0);
-  draw.pset(f->a, f->a, 1);
+  draw.clearScreen(0);
+  draw.setPixel(f->a, f->a, 1);
 
   f->a++;
   // print(&arg);
   // ui16* c = deb_canvas();
   // print(draw.pget(100, 100));
-  draw.camera(f->b, f->b);
-  draw.zbuff(4);
-  draw.flip(f->b);
-  draw.spr(2, 10, 10);
-  draw.zbuff(3);
+
+  draw.setCameraPosition((point){.x = f->b, .y = f->b});
+  draw.setZBuffer(2);
+  draw.flipSprite(f->b);
+  draw.sprite(2, (point){.x = 10, .y = 10});
+  draw.setZBuffer(0);
 
   // print(f->b);
   f->b++;
-  draw.camera(0, 0);
+  draw.setCameraPosition((point){0, 0});
 
-  draw.color(2);
-  draw.rectf(10, 10, 100, 100);
-  draw.color(1);
-  draw.rectf(5, 5, 20, 20);
-  draw.color(2);
-  draw.trif(100, 100, 120, 120, 50, 120);
-  draw.update();
+  draw.setColor(2);
+  draw.filledRectangle((point){10, 10}, (point){100, 100});
+  draw.setColor(1);
+  draw.filledRectangle((point){5, 5}, (point){20, 20});
+  draw.setColor(2);
+  draw.triangle((point){100, 100}, (point){120, 120}, (point){50, 120});
+  draw.updateVideoBuffer();
   callgl(200, 200, f->video_buffer);
   emscripten_async_call(test, arg, -1);
 }

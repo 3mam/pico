@@ -4,6 +4,18 @@
 
 extern ui16* deb_canvas();
 
+typedef struct {
+  i16 x;
+  i16 y;
+} point;
+
+typedef struct {
+  i16 x;
+  i16 y;
+  i16 width;
+  i16 height;
+} reactangle;
+
 struct draw {
   /**
    * initialize only one instance for drawing runtine
@@ -11,85 +23,85 @@ struct draw {
    * @param draw_call function called by update
    */
   void (*init)(i16 width, i16 height, void* video_buffer);
-  void (*update)(void);
+  void (*updateVideoBuffer)(void);
 
   /**
    * set color for objects
-   * @param c requires value from 0 to 63
+   * @param c requires value from 0 to 31
    */
-  void (*color)(ui8 c);
+  void (*setColor)(ui8 color);
   /**
    * draw pixel
    * @param x,y 2d coordinates
    */
-  void (*pset)(i16 x, i16 y, ui8 c);
+  void (*setPixel)(i16 x, i16 y, ui8 color);
   /**
    * get pixel from canvas
    * @param x,y 2d coordinates
    * @return return color number.
    * If return 0 then no color found
    */
-  ui8 (*pget)(i16 x, i16 y);
+  ui8 (*getPixel)(i16 x, i16 y);
   /**
    * reset color palette to default
    */
-  void (*palr)(void);
+  void (*resetColorsTransparent)(void);
   /**
    * set transparency for colour
-   * @param c color that requires value from 0 to 31
-   * @param t if transparency is TRUE then color in sprite disappear
+   * @param color color that requires value from 0 to 31
+   * @param transparent if transparency is TRUE then color in sprite disappear
    */
-  void (*palt)(ui8 c, bool t);
+  void (*setColorToTransparent)(ui8 color, bool transparent);
   /**
    * swaps palette
-   * @param p from 0 to 7
+   * @param pallet_number from 0 to 7
    */
-  void (*pal)(ui8 p);
+  void (*swapPallet)(ui8 pallet_number);
 
   /**
    * deep buffer for drawing object
-   * @param z requires value from 0 to 7.
+   * @param z requires value from -3 to 3.
    */
-  void (*zbuff)(ui8 z);
+  void (*setZBuffer)(i8 value);
   /**
    * clear canvas and set z buffer on 3
-   * @param col set color with canvas that will by clear
+   * @param color set color with canvas that will by clear
    */
-  void (*cls)(ui8 col);
+  void (*clearScreen)(ui8 color);
   /**
    * draw sprite from data struct
    * @param n number of sprite to draw
    * @param x,y 2D coordinates
    */
-  void (*spr)(ui16 n, i16 x, i16 y);
+  void (*sprite)(ui16 number, point position);
   /**
    * flip sprite
-   * @param f
+   * @param position
    * 0 standart position
    * 1 flip horizontal
    * 2 flip horizontal and vertical
    * 3 flip vertica
    */
-  void (*flip)(ui8 f);
+  void (*flipSprite)(ui8 position);
   /**
    * only draws in clipping
    */
-  void (*clip)(i16 x, i16 y, i16 w, i16 h);
+  void (*clipping)(reactangle dimensions);
   /**
    * reset clipping to default screen size
    */
-  void (*clipr)(void);
+  void (*resetClipping)();
   /**
    * changes the screen view position
    */
-  void (*camera)(i16 x, i16 y);
-  void (*line)(i16 x0, i16 y0, i16 x1, i16 y1);
-  void (*rect)(i16 x0, i16 y0, i16 x1, i16 y1);
-  void (*rectf)(i16 x0, i16 y0, i16 x1, i16 y1);
-  void (*circ)(i16 x0, i16 y0, i16 r);
-  void (*circf)(i16 x0, i16 y0, i16 r);
-  void (*tri)(i16 x0, i16 y0, i16 x1, i16 y1, i16 x2, i16 y2);
-  void (*trif)(i16 x0, i16 y0, i16 x1, i16 y1, i16 x2, i16 y2);
+  void (*setCameraPosition)(point position);
+  void (*line)(point first, point second);
+  void (*rectangle)(point first, point second);
+  void (*filledRectangle)(point first, point second);
+  void (*circle)(point position, i16 radius);
+  void (*filledCircle)(point position, i16 radius);
+  void (*triangle)(point first, point second, point third);
+  void (*filledTriangle)(point first, point second, point third);
 };
 
 extern struct draw draw;
